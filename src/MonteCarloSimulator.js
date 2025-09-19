@@ -107,15 +107,31 @@ export default function MonteCarloSimulator() {
     }
 
     // Generate 10 complete sample datasets
+    // Each point maintains its position relationship with the original data
     const sampleDatasets = [];
     for (let i = 0; i < 10; i++) {
       const dataset = [];
+      
+      // For each original point position, generate a variation
       for (let j = 0; j < inputDataLength; j++) {
+        const originalValue = dataPoints[j];  // KEY: Get the original point value
+        
         let value;
         if (distributionType === 'normal') {
-          value = generateNormal(mean, stdDev);
+          // Generate variation around the ORIGINAL POINT VALUE
+          value = generateNormal(originalValue, stdDev);
         } else {
-          value = generateUniform(min, max);
+          // Vary around the original value within a local range
+          const pointRange = max - min;
+          const halfRange = pointRange / 4;
+          let localMin = originalValue - halfRange;
+          let localMax = originalValue + halfRange;
+          
+          // Ensure local range stays within global bounds
+          localMin = Math.max(localMin, min);
+          localMax = Math.min(localMax, max);
+          
+          value = generateUniform(localMin, localMax);
         }
         
         // Apply minimum constraint if enabled
